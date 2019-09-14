@@ -9,7 +9,12 @@ import { Recipe } from "../recipe.Model";
 export class RecipeListComponent implements OnInit {
   Recipes: Recipe[] = [
     new Recipe(
-      "A Test Recipe",
+      "A Test Recipe 1",
+      " Descripton goes hear",
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJzP1gbxofQX0zV6XdWJrxJxYV0x9UtMqBZaCpfK58mr_sa5D8"
+    )
+    ,new Recipe(
+      "A Test Recipe 2",
       " Descripton goes hear",
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJzP1gbxofQX0zV6XdWJrxJxYV0x9UtMqBZaCpfK58mr_sa5D8"
     )
