@@ -5,34 +5,28 @@
 </div>
 <div class="row">
   <div class="col-xs-12">
-    <h1>Recipe Name</h1>
+    <h1>{{ recipe.Name }}</h1>
   </div>
 </div>
 
 <div class="row">
   <div class="col-xs-12">
-    <div class="dropdown" style="min-width: 100px">
-      <button
-        class="btn btn-primary default dropdown-toggle"
-        type="button"
-        id="dropdownMenuButton"
-        data-toggle="dropdown"
-        aria-haspopup="true"
-        aria-expanded="false"
-      >
-        Mange
-      </button>
-      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-        <a class="dropdown-item">Edit</a>
-        <a class="dropdown-item">Add</a>
-      </div>
-    </div>
+   <div class="btn-group " appDropdown>
+     <button type="button" class="btn btn-primary dropdown-toggle ">
+       Manage Recipes <span class="caret"></span>
+     </button>
+     <ul class="dropdown-menu">
+       <li><a href="#">To Shopping List</a></li>
+       <li><a href="#">Edit Recipe</a></li>
+       <li><a href="#">Delete Recipe</a></li>
+     </ul>
+   </div>
   </div>
 </div>
 
 <div class="row">
   <div class="col-xs-12">
-    Description
+    {{ recipe.Description }}
   </div>
 </div>
 <div class="row">
