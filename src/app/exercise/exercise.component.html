@@ -1,0 +1,46 @@
+<div class="conatiner">
+  <form (ngSubmit)="onCreatePost(f.value)" #f="ngForm">
+    <div class="row">
+      <div class="col-xm-12">
+        <div class="form-group">
+          <label for="username">UserName</label>
+          <input
+            name="username"
+            #username="ngModel"
+            required
+            ngModel
+            type="text"
+          />
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input name="password" #password="ngModel" ngModel type="text" />
+        </div>
+        <button
+          type="submit"           
+          class="btn btn-primary"
+        >
+          Post
+        </button>
+        <button type="button" (click)="onFetchData()"  class="btn btn-primary">
+          Get
+        </button>
+        <button type="button" (click)="ondeleteData()" [disabled]="PostList.length < 1 " class="btn btn-danger">
+          Clear
+        </button>
+      </div>
+    </div>
+  </form>
+  <div class="row">
+      <div class="col-xm-6">
+            <p *ngIf="PostList.length < 1">No Post Item</p>
+            <ul class="list-group" *ngIf="PostList.length > 0">
+                <li class="list-group-item" *ngFor="let item of PostList" >
+                  <h3>{{item.id | lowercase}} </h3>  
+                  <h4>{{item.username}}</h4>
+                    <h5>{{item.password}}</h5>
+                </li>
+            </ul>
+      </div>
+  </div>
+</div>
