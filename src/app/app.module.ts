@@ -18,6 +18,9 @@ import { RecipeEditComponent } from "./recipes/recipe-edit/recipe-edit.component
 import { customPipe } from "./shared/custom-pipe";
 import { ExerciseComponent } from "./exercise/exercise.component";
 import { HttpClientModule } from "@angular/common/http";
+import { authComponent } from './auth/auth-component';
+import { LoadingComponent } from './shared/loading/loading.component';
+ 
 
 @NgModule({
   declarations: [
@@ -33,7 +36,7 @@ import { HttpClientModule } from "@angular/common/http";
     RecipeStartComponent,
     RecipeEditComponent,
     customPipe,
-    ExerciseComponent
+    ExerciseComponent,authComponent, LoadingComponent 
   ],
   imports: [
     BrowserModule,
