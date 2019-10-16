@@ -1,9 +1,10 @@
 import { Injectable } from "@angular/core";
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
-import { catchError, debounce, tap } from "rxjs/operators";
-import { throwError, Subject } from "rxjs";
-import { debug } from "util";
-import { User } from "./user.Model";
+import { catchError, tap } from "rxjs/operators";
+import { throwError, BehaviorSubject } from "rxjs";
+
+import { User } from "./user.model";
+import { Router } from "@angular/router";
 
 export interface AuthResponseData {
   kind: string;
@@ -12,17 +13,21 @@ export interface AuthResponseData {
   refreshToken: string;
   expiresIn: string;
   localId: string;
-  IsRegistered?: boolean;
+  registered?: boolean;
 }
+
 @Injectable({ providedIn: "root" })
-export class authService {
-  constructor(private http: HttpClient) {}
-  user = new Subject<User>();
-  login(email: string, password: string) {
+export class AuthService {
+  user = new BehaviorSubject<User>(null);
+  ApiKey: string = "AIzaSyB5C_jrE3E0n4mdImmT_BU0rS_mhMPpPo0";
+  tokenExpirationTimer: any;
+  constructor(private http: HttpClient, private router: Router) {}
+
+  signup(email: string, password: string) {
     return this.http
       .post<AuthResponseData>(
-        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyB5C_jrE3E0n4mdImmT_BU0rS_mhMPpPo0",
-
+        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=" +
+          this.ApiKey,
         {
           email: email,
           password: password,
@@ -30,65 +35,110 @@ export class authService {
         }
       )
       .pipe(
-        catchError(this.handelError),
+        catchError(this.handleError),
         tap(resData => {
-          this.handelAuthentication(
+          this.handleAuthentication(
             resData.email,
             resData.localId,
-            +resData.expiresIn,
-            resData.idToken
+            resData.idToken,
+            +resData.expiresIn
           );
         })
       );
   }
+  logOut() {
+    this.user.next(null);
+    this.router.navigate(["/auth"]);
+    localStorage.removeItem("userData");
+    if (this.tokenExpirationTimer) {
+      clearTimeout(this.tokenExpirationTimer);
+    }
+    this.tokenExpirationTimer = null;
+  }
 
-  signup(email: string, password: string, returnSecureToken: boolean) {
+  autoLogin() {
+    const userData: {
+      email: string;
+      id: string;
+      _token: string;
+      _tokenExpirationDate: string;
+    } = JSON.parse(localStorage.getItem("userData"));
+    if (!userData) {
+      return;
+    }
+
+    const loadedUser = new User(
+      userData.email,
+      userData.id,
+      userData._token,
+      new Date(userData._tokenExpirationDate)
+    );
+
+    if (loadedUser.token) {
+      this.user.next(loadedUser);
+      const expirationDuration =
+        new Date(userData._tokenExpirationDate).getTime() -
+        new Date().getTime();
+      this.autoLogout(expirationDuration);
+    }
+  }
+
+  autoLogout(expirationDuration: number) {
+    this.tokenExpirationTimer = setTimeout(() => {
+      this.logOut();
+    }, expirationDuration);
+  }
+
+  login(email: string, password: string) {
     return this.http
       .post<AuthResponseData>(
-        "https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=AIzaSyB5C_jrE3E0n4mdImmT_BU0rS_mhMPpPo0",
-
+        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=" +
+          this.ApiKey,
         {
           email: email,
           password: password,
-          returnSecureToken: returnSecureToken
+          returnSecureToken: true
         }
       )
       .pipe(
-        catchError(this.handelError),
+        catchError(this.handleError),
         tap(resData => {
-          this.handelAuthentication(
+          this.handleAuthentication(
             resData.email,
             resData.localId,
-            +resData.expiresIn,
-            resData.idToken
+            resData.idToken,
+            +resData.expiresIn
           );
         })
       );
   }
 
-  private handelAuthentication(
+  private handleAuthentication(
     email: string,
-    localId: string,
-    expiresIn: number,
-    idToken: string
+    userId: string,
+    token: string,
+    expiresIn: number
   ) {
-    const expireDate = new Date(new Date().getTime() + expiresIn * 1000);
-    const user = new User(email, localId, idToken, expireDate);
+    const expirationDate = new Date(new Date().getTime() + expiresIn * 1000);
+    const user = new User(email, userId, token, expirationDate);
     this.user.next(user);
+    localStorage.setItem("userData", JSON.stringify(user));
   }
 
-  private handelError(errorRes: HttpErrorResponse) {
-    let errorMessage = " UnKnown error";
-    if (!errorRes.error || !errorRes.error.error.message)
+  private handleError(errorRes: HttpErrorResponse) {
+    let errorMessage = "An unknown error occurred!";
+    if (!errorRes.error || !errorRes.error.error) {
       return throwError(errorMessage);
-
+    }
     switch (errorRes.error.error.message) {
       case "EMAIL_EXISTS":
-        errorMessage = "this email already exists";
+        errorMessage = "This email exists already";
         break;
       case "EMAIL_NOT_FOUND":
-        errorMessage = "Email not Found";
-      default:
+        errorMessage = "This email does not exist.";
+        break;
+      case "INVALID_PASSWORD":
+        errorMessage = "This password is not correct.";
         break;
     }
     return throwError(errorMessage);
