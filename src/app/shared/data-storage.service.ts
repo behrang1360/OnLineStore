@@ -16,7 +16,7 @@ export class DataStorageService {
 
   storeRecipes() {
     const recipes = this.recipeService.getRecipes();
-    this.http
+    this.http  
       .put("https://my-frist-app-2c395.firebaseio.com/recipes.json", recipes)
       .subscribe(response => {
         console.log(response);
